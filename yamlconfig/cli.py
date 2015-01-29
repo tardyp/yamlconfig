@@ -1,4 +1,6 @@
-from yamlconfig import YamlConfig, YamlError
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from src.yamlconfig import YamlConfig, YamlError
 import argparse
 import sys
 
@@ -25,3 +27,6 @@ def main():
             print >>sys.stderr, e.message
             ret = 1
     return ret
+
+if __name__ == "__main__":
+    sys.exit(main())
