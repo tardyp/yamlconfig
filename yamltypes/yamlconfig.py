@@ -24,6 +24,44 @@ class CustomizationError(ValueError):
     pass
 
 
+class MultipleTypes(object):
+
+    """allows for matching multiple types"""
+
+    def __init__(self, *types):
+        self.types = types
+
+    def ensure_type(self, path, val):
+        if self.maybenull and val is None:
+            return
+        if self.type == "anything":
+            return
+        if str(val).lower() == "none":
+            return
+        for t in self.types:
+            if isinstance(val, t):
+                return
+        raise YamlError(path, val, "cannot be matched to any required types - %s." %
+                            (str(val), ', '.join([str(type(x)) for x in self.types])))
+
+    def match(self, name, val):
+        matched = False
+
+        for matchtype in self.types:
+            try:
+                matchtype.match(name, val)
+                matched = True
+                break
+            except YamlError:
+                continue
+
+        if matched:
+            return matched
+        else:
+            raise YamlError(name, val, "'%s' could not be matched to any required types - %s." %
+                            (str(val), ', '.join([str(type(x)) for x in self.types])))
+
+
 class Type(object):
 
     """basic types (str, int, etc)"""
@@ -407,6 +445,16 @@ class YamlConfigBuilder(object):
                       self.createType(path + "[]." + tname,
                                       tname, spec),
                       names_type=names_type)
+        elif t.startswith("multi"):
+            types = []
+            if 'types' not in spec:
+                raise YamlError(path, spec, "multi type has no 'types': %r" % (spec,))
+            if not spec['types']:
+                raise YamlError(path, spec, 'multi["types"] must be a list of types')
+            for i, info in enumerate(spec["types"]):
+                types.append(self.createType(path + ".[%d]" % (i,), str(i), info))
+
+            ret = MultipleTypes(*types)
         elif t.startswith("dict"):
             kids = {}
             if 'kids' not in spec:

@@ -107,6 +107,9 @@ boolean
 float
   a floating point number
 
+multi
+  allows matching multiple base or compound types
+
 Compound types
 ``````````````
 A value of compound type is composed of several subtypes values or key/value:
@@ -160,6 +163,9 @@ of specification you describe for it:
 
 values:
    a set of possible values that the attribute can take
+
+types:
+   the set of possible types a multi can match
 
 name:
    the name of the attribute as displayed in the UI
@@ -227,3 +233,32 @@ matches a yaml file like:
                   location: l1
                   speed: fast
           slaves: [build3build, build4build, build5build]
+
+
+Multi example
+-------------
+
+The ``meta.yaml``:
+
+.. code-block:: yaml
+
+  root:
+    type: listofmultis
+    types:
+      -
+        type: listofstrings
+      -
+        type: mapofstrings
+
+matches a yaml file like:
+
+.. code-block:: yaml
+
+  -
+    - bb1
+    - bb2
+    - bb3
+  -
+    bb1: Fine
+    bb2: On Fire
+    bb3: Underwater
